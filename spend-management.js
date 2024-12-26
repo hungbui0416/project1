@@ -1,3 +1,12 @@
+document.getElementById('query-type-select').addEventListener('change', function () {
+  const select = this;
+  const firstOption = select.querySelector('option[value="0"]');
+
+  if (select.value !== "0" && firstOption) {
+    firstOption.style.display = 'none';
+  }
+});
+
 document.querySelector('.js-add-spend-button').addEventListener('click', () => {
   addSpend();
 });
@@ -42,7 +51,6 @@ spendList.forEach((spendObject, index) => {
 renderSpendList();
 
 function search() {
-  console.log('search');
   const resultElement = document.querySelector('.js-result-paragraph');
 
   const startDateInputElement = document.querySelector('.js-start-date-input');
@@ -54,19 +62,18 @@ function search() {
   const queryTypeContainer = document.querySelector('.js-query-type-container').querySelector('select');
   const queryType = queryTypeContainer.value;
 
-  if (queryType === '0') {}
-  else if (queryType === '1') {
-    resultElement.innerHTML = totalSpend(startDate, endDate) + ' VND';
+  if (queryType === '1') {
+    resultElement.innerHTML = Intl.NumberFormat('en-US').format(totalSpend(startDate, endDate)) + ' VND';
   }
   else if (queryType === '2') {
-    resultElement.innerHTML = RMQ(convertDate(startDate), convertDate(endDate)) + ' VND';
+    resultElement.innerHTML = Intl.NumberFormat('en-US').format(RMQ(convertDate(startDate), convertDate(endDate))) + ' VND';
   }
   else if (queryType === '3') {
     if (rebuildST) {
       buildSegmentTree(1, 1, N - 1);
       rebuildST = false;
     }
-    resultElement.innerHTML = getMin(1, 1, N - 1, convertDate(startDate), convertDate(endDate)) + ' VND';
+    resultElement.innerHTML = Intl.NumberFormat('en-US').format(getMin(1, 1, N - 1, convertDate(startDate), convertDate(endDate))) + ' VND';
   }
 }
 
@@ -143,7 +150,7 @@ function renderSpendList() {
     const { name, amount, date } = spendObject;
     const html = `
       <div>${name}</div>
-      <div>${amount} VND</div>
+      <div>${Intl.NumberFormat('en-US').format(amount)} VND</div>
       <div>${date}</div>
       <button class="js-delete-spend-button delete-spend-button">Delete</button>
     `;
