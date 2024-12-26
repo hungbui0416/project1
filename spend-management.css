@@ -2,13 +2,35 @@ body {
   font-family: Arial;
 }
 
+.spend-management-paragraph {
+  font-size: 30px;
+  text-align: center;
+  
+}
+
+.spend-query-paragraph,
+.spend-list-paragraph {
+  margin-top: 50px;
+  font-size: 20px;
+}
+
+.spend-query-grid,
 .spend-grid,
 .spend-input-grid {
   display: grid;
-  grid-template-columns: 200px 150px 150px 100px;
   column-gap: 10px;
   row-gap: 10px;
   align-items: center;
+}
+
+.spend-query-grid {
+  grid-template-columns: 150px 150px 200px 100px;
+  align-items: stretch;
+}
+
+.spend-grid,
+.spend-input-grid {
+  grid-template-columns: 200px 150px 150px 100px;
 }
 
 .spend-input-grid {
@@ -16,11 +38,21 @@ body {
   align-items: stretch;
 }
 
+.start-date-input,
+.end-date-input,
 .name-input,
-.amount-input
+.amount-input,
 .date-input {
   font-size: 15px;
   padding: 6px;
+}
+
+.search-button {
+  background-color: darkgray;
+  color: white;
+  border: none;
+  font-size: 15px;
+  cursor: pointer;
 }
 
 .add-spend-button {
