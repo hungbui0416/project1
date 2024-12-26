@@ -66,14 +66,10 @@ function search() {
     resultElement.innerHTML = Intl.NumberFormat('en-US').format(totalSpend(startDate, endDate)) + ' VND';
   }
   else if (queryType === '2') {
-    resultElement.innerHTML = Intl.NumberFormat('en-US').format(RMQ(convertDate(startDate), convertDate(endDate))) + ' VND';
+    resultElement.innerHTML = Intl.NumberFormat('en-US').format(getMax(startDate, endDate)) + ' VND';
   }
   else if (queryType === '3') {
-    if (rebuildST) {
-      buildSegmentTree(1, 1, N - 1);
-      rebuildST = false;
-    }
-    resultElement.innerHTML = Intl.NumberFormat('en-US').format(getMin(1, 1, N - 1, convertDate(startDate), convertDate(endDate))) + ' VND';
+    resultElement.innerHTML = Intl.NumberFormat('en-US').format(getMin(startDate, endDate)) + ' VND';
   }
 }
 
@@ -88,7 +84,9 @@ function computeRM() {
   }
 }
 
-function RMQ(start, end) {
+function getMax(startDate, endDate) {
+  const start = convertDate(startDate);
+  const end = convertDate(endDate);
   if (recomputeRM) {
     computeRM();
     recomputeRM = false;
@@ -109,7 +107,7 @@ function buildSegmentTree(id, start, end) {
   ST[id] = Math.min(ST[id * 2], ST[id * 2 + 1]);
 }
 
-function getMin(id, start, end, i, j) {
+function get(id, start, end, i, j) {
   if (j < start || i > end) {
     return INF;
   }
@@ -117,7 +115,15 @@ function getMin(id, start, end, i, j) {
     return ST[id];
   }
   const mid = Math.floor((start + end) / 2);
-  return Math.min(getMin(id * 2, start, mid, i, j), getMin(id * 2 + 1, mid + 1, end, i, j));
+  return Math.min(get(id * 2, start, mid, i, j), get(id * 2 + 1, mid + 1, end, i, j));
+}
+
+function getMin(startDate, endDate) {
+  if (rebuildST) {
+    buildSegmentTree(1, 1, N - 1);
+    rebuildST = false;
+  }
+  return get(1, 1, N - 1, convertDate(startDate), convertDate(endDate));
 }
 
 function computePS() {
@@ -128,12 +134,12 @@ function computePS() {
   }
 }
 
-function totalSpend(start, end) {
+function totalSpend(startDate, endDate) {
   if (recomputePS) {
     computePS();
     recomputePS = false;
   }
-  return PS[convertDate(end)] - PS[convertDate(start) - 1];
+  return PS[convertDate(endDate)] - PS[convertDate(startDate) - 1];
 }
 
 function convertDate(date) {
