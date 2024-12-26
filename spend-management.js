@@ -24,10 +24,16 @@ const spendList = [{
   date: '2024-08-03'
 }];
 
+const N = 1e5;
+const INF = 1e9;
+const STARTDATE = 1999 * 366 + 12 * 31 + 31; // 01/01/2000
 const spendOn = new Map();
-const N = 1e6;
-const M = new Array(N);
-let recomputeM = true;
+const PS = new Array(N);
+const ST = new Array(N * 4);
+const RM = new Array(N).fill(null).map(() => new Array(Math.ceil(Math.log2(N))).fill(0));
+let recomputePS = true;
+let rebuildST = true;
+let recomputeRM = true;
 
 spendList.forEach((spendObject, index) => {
   spendOn.set(convertDate(spendObject.date), spendObject.amount);
@@ -48,33 +54,86 @@ function search() {
   const queryTypeContainer = document.querySelector('.js-query-type-container').querySelector('select');
   const queryType = queryTypeContainer.value;
 
-  if (queryType === '1') {
-    
+  if (queryType === '0') {}
+  else if (queryType === '1') {
     resultElement.innerHTML = totalSpend(startDate, endDate) + ' VND';
+  }
+  else if (queryType === '2') {
+    resultElement.innerHTML = RMQ(convertDate(startDate), convertDate(endDate));
+  }
+  else if (queryType === '3') {
+    if (rebuildST) {
+      buildSegmentTree(1, 1, N - 1);
+      rebuildST = false;
+    }
+    resultElement.innerHTML = getMin(1, 1, N - 1, convertDate(startDate), convertDate(endDate)) + ' VND';
+  }
+}
+
+function computeRM() {
+  for (let i = 1; i < N; i++) {
+    RM[i][0] = (spendOn.get(i) || 0);
+  }
+  for (let j = 1; j <= Math.floor(Math.log2(N)); j++) {
+    for (let i = 1; i + (1 << j) <= N; i++) {
+      RM[i][j] = Math.max(RM[i][j - 1], RM[i + (1 << (j - 1))][j - 1]);
+    }
+  }
+}
+
+function RMQ(start, end) {
+  if (recomputeRM) {
+    computeRM();
+    recomputeRM = false;
+  }
+  const k = Math.floor(Math.log2(end - start + 1));
+  return Math.max(RM[start][k], RM[end - (1 << k) + 1][k]);
+}
+
+function buildSegmentTree(id, start, end) {
+  if (start === end) {
+    ST[id] = spendOn.get(start) || INF;
+    return;
+  }
+  const mid = Math.floor((start + end) / 2);
+  buildSegmentTree(id * 2, start, mid);
+  buildSegmentTree(id * 2 + 1, mid + 1, end);
+
+  ST[id] = Math.min(ST[id * 2], ST[id * 2 + 1]);
+}
+
+function getMin(id, start, end, i, j) {
+  if (j < start || i > end) {
+    return INF;
+  }
+  if (i <= start && end <= j) {
+    return ST[id];
+  }
+  const mid = Math.floor((start + end) / 2);
+  return Math.min(getMin(id * 2, start, mid, i, j), getMin(id * 2 + 1, mid + 1, end, i, j));
+}
+
+function computePS() {
+  PS.fill(0);
+  PS[0] = 0;
+  for (let i = 1 ; i < N; i++) {
+    PS[i] += PS[i - 1] + (spendOn.get(i) || 0);
   }
 }
 
 function totalSpend(start, end) {
-  if (recomputeM) {
-    computeM();
-    recomputeM = false;
+  if (recomputePS) {
+    computePS();
+    recomputePS = false;
   }
-  return M[convertDate(end)] - M[convertDate(start) - 1];
-}
-
-function computeM() {
-  M.fill(0);
-  M[0] = 0;
-  for (let i = 1 ; i < N; i++) {
-    M[i] += M[i - 1] + (spendOn.get(i) || 0);
-  }
+  return PS[convertDate(end)] - PS[convertDate(start) - 1];
 }
 
 function convertDate(date) {
   const year = (date[0] - '0') * 1000 + (date[1] - '0') * 100 + (date[2] - '0') * 10 + (date[3] - '0');
   const month = (date[5] - '0') * 10 + (date[6] - '0');
   const day = (date[8] - '0') * 10 + (date[9] - '0');
-  return year * 366 + month * 31 + day;
+  return year * 366 + month * 31 + day - STARTDATE;
 }
 
 function renderSpendList() {
@@ -100,7 +159,9 @@ function renderSpendList() {
 
       renderSpendList();
 
-      recomputeM = true;
+      recomputePS = true;
+      rebuildST = true;
+      recomputeRM = true;
     });
   });
 }
@@ -125,7 +186,9 @@ function addSpend() {
 
   renderSpendList();
 
-  recomputeM = true;
+  recomputePS = true;
+  rebuildST = true;
+  recomputeRM = true;
 
   nameInputElement.value = '';
   amountInputElement.value = '';

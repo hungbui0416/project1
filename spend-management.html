@@ -13,11 +13,12 @@
       <input type="date" class="js-start-date-input start-date-input">
       <input type="date" class="js-end-date-input end-date-input">
       <div class="js-query-type-container query-type-container">
-        <Select>
-          <option value="1">Total spend</option>
-          <option value="2">Highest spend</option>
-          <option value="3">Lowest spend</option>
-        </Select>
+        <select id="query-type-select" class="query-select">
+          <option value="0">Select query type</option>
+          <option value="1">Total Spend</option>
+          <option value="2">Highest Spend</option>
+          <option value="3">Lowest Spend</option>
+        </select>
       </div>
       <button class="js-search-button search-button">Search</button>
     </div>
