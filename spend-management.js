@@ -59,7 +59,7 @@ function search() {
     resultElement.innerHTML = totalSpend(startDate, endDate) + ' VND';
   }
   else if (queryType === '2') {
-    resultElement.innerHTML = RMQ(convertDate(startDate), convertDate(endDate));
+    resultElement.innerHTML = RMQ(convertDate(startDate), convertDate(endDate)) + ' VND';
   }
   else if (queryType === '3') {
     if (rebuildST) {
