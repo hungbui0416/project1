@@ -33,18 +33,16 @@ const spendList = [{
   date: '2024-08-03'
 }];
 
-const N = 1e3;
+const N = 1e4;
 // const INF = 1e9;
 const PS = new Array(N).fill(0);
 const ST = new Array(N * 4);
-// const RM = new Array(N).fill(null).map(() => new Array(Math.ceil(Math.log2(N))).fill(0));
+const RM = new Array(N).fill(null).map(() => new Array(Math.ceil(Math.log2(N))).fill(0));
 let recomputePS = true;
 let rebuildST = true;
-// let recomputeRM = true;
+let recomputeRM = true;
+let resort = true;
 
-spendList.sort((a, b) => {
-  return a.date < b.date;
-});
 renderSpendList();
 
 function search() {
@@ -59,12 +57,23 @@ function search() {
   const queryTypeContainer = document.querySelector('.js-query-type-container').querySelector('select');
   const queryType = queryTypeContainer.value;
 
+  if (resort) {
+    spendList.sort((a, b) => {
+      return a.date < b.date;
+    });
+    renderSpendList();
+    resort = false;
+  }
+
   if (queryType === '1') {
     resultElement.innerHTML = Intl.NumberFormat('en-US').format(totalSpend(startDate, endDate)) + ' VND';
   }
   else if (queryType === '2') {
     const index = getMin(startDate, endDate);
-    console.log(index);
+    if (index === -1) {
+      resultElement.innerHTML = 'No spend found';
+      return;
+    }
     resultElement.innerHTML = `
       <div>Name</div>
       <div>Amount</div>
@@ -74,32 +83,58 @@ function search() {
       <div>${spendList[index].date}</div>
     `;
   }
-  // else if (queryType === '3') {
-  //   resultElement.innerHTML = Intl.NumberFormat('en-US').format(getMin(startDate, endDate)) + ' VND';
-  // }
+  else if (queryType === '3') {
+    const index = getMax(startDate, endDate);
+    if (index === -1) {
+      resultElement.innerHTML = 'No spend found';
+      return;
+    }
+    resultElement.innerHTML = `
+      <div>Name</div>
+      <div>Amount</div>
+      <div>Date</div>
+      <div>${spendList[index].name}</div>
+      <div>${Intl.NumberFormat('en-US').format(spendList[index].amount)} VND</div>
+      <div>${spendList[index].date}</div>
+    `;
+  }
 }
 
-// function computeRM() {
-//   for (let i = 1; i < N; i++) {
-//     RM[i][0] = (spendOn.get(i) || 0);
-//   }
-//   for (let j = 1; j <= Math.floor(Math.log2(N)); j++) {
-//     for (let i = 1; i + (1 << j) <= N; i++) {
-//       RM[i][j] = Math.max(RM[i][j - 1], RM[i + (1 << (j - 1))][j - 1]);
-//     }
-//   }
-// }
+function computeRM(n) {
+  for (let i = 0; i < n; i++) {
+    RM[i][0] = i;
+  }
+  for (let j = 1; j <= Math.floor(Math.log2(n)); j++) {
+    for (let i = 0; i + (1 << j) - 1 < n; i++) {
+      if (spendList[RM[i][j - 1]].amount > spendList[RM[i + (1 << (j - 1))][j - 1]].amount) {
+        RM[i][j] = RM[i][j - 1];
+      }
+      else {
+        RM[i][j] = RM[i + (1 << (j - 1))][j - 1];
+      }
+    }
+  }
+}
 
-// function getMax(startDate, endDate) {
-//   const start = convertDate(startDate);
-//   const end = convertDate(endDate);
-//   if (recomputeRM) {
-//     computeRM();
-//     recomputeRM = false;
-//   }
-//   const k = Math.floor(Math.log2(end - start + 1));
-//   return Math.max(RM[start][k], RM[end - (1 << k) + 1][k]);
-// }
+function getMax(startDate, endDate) {
+  const n = spendList.length;
+  if (n === 0) {
+    return -1;
+  }
+  if (recomputeRM) {
+    computeRM(n);
+    recomputeRM = false;
+  }
+  const end = findStartIndex(startDate);
+  const start = findEndIndex(endDate);
+  const k = Math.floor(Math.log2(end - start + 1));
+  if (spendList[RM[start][k]].amount > spendList[RM[end - (1 << k) + 1][k]].amount) {
+    return RM[start][k];
+  }
+  else {
+    return RM[end - (1 << k) + 1][k];
+  }
+}
 
 function buildSegmentTree(id, start, end) {
   if (start === end) {
@@ -145,7 +180,7 @@ function get(id, start, end, i, j) {
 function getMin(startDate, endDate) {
   const n = spendList.length;
   if (n === 0) {
-    return 0;
+    return -1;
   }
   if (rebuildST) {
     buildSegmentTree(1, 1, n);
@@ -243,7 +278,8 @@ function renderSpendList() {
 
       recomputePS = true;
       rebuildST = true;
-      // recomputeRM = true;
+      recomputeRM = true;
+      resort = true;
     });
   });
 }
@@ -264,14 +300,12 @@ function addSpend() {
     date
   });
 
-  spendList.sort((a, b) => {
-    return a.date < b.date;
-  });
   renderSpendList();
 
   recomputePS = true;
   rebuildST = true;
-  // recomputeRM = true;
+  recomputeRM = true;
+  resort = true;
 
   nameInputElement.value = '';
   amountInputElement.value = '';
