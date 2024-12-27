@@ -14,28 +14,40 @@ body {
   font-size: 20px;
 }
 
-.spend-query-grid,
-.spend-grid,
+.spend-query-grid {
+  display: grid;
+  column-gap: 10px;
+  row-gap: 10px;
+  align-items: center;
+  grid-template-columns: 150px 150px 150px 100px;
+  margin-bottom: 30px;
+  align-items: stretch;
+}
+
+.result-grid {
+  display: grid;
+  column-gap: 10px;
+  row-gap: 10px;
+  align-items: center;
+  grid-template-columns: 200px 150px 150px;
+}
+
 .spend-input-grid {
   display: grid;
   column-gap: 10px;
   row-gap: 10px;
   align-items: center;
-}
-
-.spend-query-grid {
-  grid-template-columns: 150px 150px 200px 100px;
-  align-items: stretch;
-}
-
-.spend-grid,
-.spend-input-grid {
   grid-template-columns: 200px 150px 150px 100px;
+  margin-bottom: 30px;
+  align-items: stretch;
 }
 
-.spend-input-grid {
-  margin-bottom: 10px;
-  align-items: stretch;
+.spend-grid {
+  display: grid;
+  column-gap: 10px;
+  row-gap: 10px;
+  align-items: center;
+  grid-template-columns: 200px 150px 150px 100px;
 }
 
 .start-date-input,

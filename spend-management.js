@@ -48,7 +48,7 @@ spendList.sort((a, b) => {
 renderSpendList();
 
 function search() {
-  const resultElement = document.querySelector('.js-result-paragraph');
+  const resultElement = document.querySelector('.js-result-grid');
 
   const startDateInputElement = document.querySelector('.js-start-date-input');
   const startDate = startDateInputElement.value;
@@ -66,6 +66,9 @@ function search() {
     const index = getMin(startDate, endDate);
     console.log(index);
     resultElement.innerHTML = `
+      <div>Name</div>
+      <div>Amount</div>
+      <div>Date</div>
       <div>${spendList[index].name}</div>
       <div>${Intl.NumberFormat('en-US').format(spendList[index].amount)} VND</div>
       <div>${spendList[index].date}</div>
