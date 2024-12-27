@@ -31,6 +31,26 @@ const spendList = [{
   name: 'Tiền ăn sáng', 
   amount: 20000,
   date: '2024-08-03'
+}, {
+  name: 'Tiền mua quần áo',
+  amount: 514000,
+  date: '2024-10-12'
+}, {
+  name: 'Tiền mua sách',
+  amount: 386000,
+  date: '2024-05-17'
+}, {
+  name: 'Tiền gửi xe',
+  amount: 3000,
+  date: '2024-07-29'
+}, {
+  name: 'Tiền điện thoại',
+  amount: 99000,
+  date: '2024-09-15'
+}, {
+  name: 'Tiền mua thuốc',
+  amount: 459000,
+  date: '2024-11-02'
 }];
 
 const N = 1e4;
