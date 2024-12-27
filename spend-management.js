@@ -33,21 +33,18 @@ const spendList = [{
   date: '2024-08-03'
 }];
 
-const N = 1e5;
-const INF = 1e9;
-const STARTDATE = 1999 * 366 + 12 * 31 + 31; // 01/01/2000
-const spendOn = new Map();
-const PS = new Array(N);
+const N = 1e3;
+// const INF = 1e9;
+const PS = new Array(N).fill(0);
 const ST = new Array(N * 4);
-const RM = new Array(N).fill(null).map(() => new Array(Math.ceil(Math.log2(N))).fill(0));
+// const RM = new Array(N).fill(null).map(() => new Array(Math.ceil(Math.log2(N))).fill(0));
 let recomputePS = true;
 let rebuildST = true;
-let recomputeRM = true;
+// let recomputeRM = true;
 
-spendList.forEach((spendObject, index) => {
-  spendOn.set(convertDate(spendObject.date), spendObject.amount);
+spendList.sort((a, b) => {
+  return a.date < b.date;
 });
-
 renderSpendList();
 
 function search() {
@@ -66,87 +63,157 @@ function search() {
     resultElement.innerHTML = Intl.NumberFormat('en-US').format(totalSpend(startDate, endDate)) + ' VND';
   }
   else if (queryType === '2') {
-    resultElement.innerHTML = Intl.NumberFormat('en-US').format(getMax(startDate, endDate)) + ' VND';
+    const index = getMin(startDate, endDate);
+    console.log(index);
+    resultElement.innerHTML = `
+      <div>${spendList[index].name}</div>
+      <div>${Intl.NumberFormat('en-US').format(spendList[index].amount)} VND</div>
+      <div>${spendList[index].date}</div>
+    `;
   }
-  else if (queryType === '3') {
-    resultElement.innerHTML = Intl.NumberFormat('en-US').format(getMin(startDate, endDate)) + ' VND';
-  }
+  // else if (queryType === '3') {
+  //   resultElement.innerHTML = Intl.NumberFormat('en-US').format(getMin(startDate, endDate)) + ' VND';
+  // }
 }
 
-function computeRM() {
-  for (let i = 1; i < N; i++) {
-    RM[i][0] = (spendOn.get(i) || 0);
-  }
-  for (let j = 1; j <= Math.floor(Math.log2(N)); j++) {
-    for (let i = 1; i + (1 << j) <= N; i++) {
-      RM[i][j] = Math.max(RM[i][j - 1], RM[i + (1 << (j - 1))][j - 1]);
-    }
-  }
-}
+// function computeRM() {
+//   for (let i = 1; i < N; i++) {
+//     RM[i][0] = (spendOn.get(i) || 0);
+//   }
+//   for (let j = 1; j <= Math.floor(Math.log2(N)); j++) {
+//     for (let i = 1; i + (1 << j) <= N; i++) {
+//       RM[i][j] = Math.max(RM[i][j - 1], RM[i + (1 << (j - 1))][j - 1]);
+//     }
+//   }
+// }
 
-function getMax(startDate, endDate) {
-  const start = convertDate(startDate);
-  const end = convertDate(endDate);
-  if (recomputeRM) {
-    computeRM();
-    recomputeRM = false;
-  }
-  const k = Math.floor(Math.log2(end - start + 1));
-  return Math.max(RM[start][k], RM[end - (1 << k) + 1][k]);
-}
+// function getMax(startDate, endDate) {
+//   const start = convertDate(startDate);
+//   const end = convertDate(endDate);
+//   if (recomputeRM) {
+//     computeRM();
+//     recomputeRM = false;
+//   }
+//   const k = Math.floor(Math.log2(end - start + 1));
+//   return Math.max(RM[start][k], RM[end - (1 << k) + 1][k]);
+// }
 
 function buildSegmentTree(id, start, end) {
   if (start === end) {
-    ST[id] = spendOn.get(start) || INF;
+    ST[id] = start;
     return;
   }
   const mid = Math.floor((start + end) / 2);
   buildSegmentTree(id * 2, start, mid);
   buildSegmentTree(id * 2 + 1, mid + 1, end);
 
-  ST[id] = Math.min(ST[id * 2], ST[id * 2 + 1]);
+  if (spendList[ST[id * 2] - 1].amount < spendList[ST[id * 2 + 1] - 1].amount) {
+    ST[id] = ST[id * 2];
+  }
+  else {
+    ST[id] = ST[id * 2 + 1];
+  }
 }
 
 function get(id, start, end, i, j) {
   if (j < start || i > end) {
-    return INF;
+    return 0;
   }
   if (i <= start && end <= j) {
     return ST[id];
   }
   const mid = Math.floor((start + end) / 2);
-  return Math.min(get(id * 2, start, mid, i, j), get(id * 2 + 1, mid + 1, end, i, j));
+  if (get(id * 2, start, mid, i, j) === 0) {
+    return get(id * 2 + 1, mid + 1, end, i, j);
+  }
+  else if (get(id * 2 + 1, mid + 1, end, i, j) === 0) {
+    return get(id * 2, start, mid, i, j);
+  }
+  else {
+    if (spendList[get(id * 2, start, mid, i, j) - 1].amount < spendList[get(id * 2 + 1, mid + 1, end, i, j) - 1].amount) {
+      return get(id * 2, start, mid, i, j);
+    }
+    else {
+      return get(id * 2 + 1, mid + 1, end, i, j);
+    }
+  }
 }
 
 function getMin(startDate, endDate) {
+  const n = spendList.length;
+  if (n === 0) {
+    return 0;
+  }
   if (rebuildST) {
-    buildSegmentTree(1, 1, N - 1);
+    buildSegmentTree(1, 1, n);
     rebuildST = false;
   }
-  return get(1, 1, N - 1, convertDate(startDate), convertDate(endDate));
+  const end = findStartIndex(startDate) + 1;
+  const start = findEndIndex(endDate) + 1;
+  return get(1, 1, n, start, end) - 1;
 }
 
-function computePS() {
+function computePS(n) {
   PS.fill(0);
-  PS[0] = 0;
-  for (let i = 1 ; i < N; i++) {
-    PS[i] += PS[i - 1] + (spendOn.get(i) || 0);
+  for (let i = 0; i < n; i++) {
+    PS[i + 1] += PS[i] + spendList[i].amount;
+  }
+}
+
+function findStartIndex(date) {
+  let start = 0;
+  let end = spendList.length - 1;
+  while (start < end) {
+    const mid = Math.floor((start + end) / 2);
+    if (spendList[mid].date < date) {
+      end = mid;
+    }
+    else {
+      start = mid + 1;
+    }
+  }
+
+  if (start === end && spendList[start].date < date) {
+    return start - 1;
+  }
+  else {
+    return spendList.length - 1;
+  }
+}
+
+function findEndIndex(date) {
+  let start = 0;
+  let end = spendList.length - 1;
+  while (start < end) {
+    const mid = Math.floor((start + end) / 2);
+    if (spendList[mid].date <= date) {
+      end = mid;
+    }
+    else {
+      start = mid + 1;
+    }
+  }
+
+  if (start === end && spendList[start].date <= date) {
+    return start;
+  }
+  else {
+    return 0;
   }
 }
 
 function totalSpend(startDate, endDate) {
+  const n = spendList.length;
+  if (n === 0) {
+    return 0;
+  }
   if (recomputePS) {
-    computePS();
+    computePS(n);
     recomputePS = false;
   }
-  return PS[convertDate(endDate)] - PS[convertDate(startDate) - 1];
-}
-
-function convertDate(date) {
-  const year = (date[0] - '0') * 1000 + (date[1] - '0') * 100 + (date[2] - '0') * 10 + (date[3] - '0');
-  const month = (date[5] - '0') * 10 + (date[6] - '0');
-  const day = (date[8] - '0') * 10 + (date[9] - '0');
-  return year * 366 + month * 31 + day - STARTDATE;
+  const end = findStartIndex(startDate);
+  const start = findEndIndex(endDate);
+  return PS[end + 1] - PS[start];
 }
 
 function renderSpendList() {
@@ -167,14 +234,13 @@ function renderSpendList() {
 
   document.querySelectorAll('.js-delete-spend-button').forEach((deleteButton, index) => {
     deleteButton.addEventListener('click', () => {
-      spendOn.set(convertDate(spendList[index].date), spendOn.get(convertDate(spendList[index].date)) - spendList[index].amount);
       spendList.splice(index, 1);
 
       renderSpendList();
 
       recomputePS = true;
       rebuildST = true;
-      recomputeRM = true;
+      // recomputeRM = true;
     });
   });
 }
@@ -195,13 +261,14 @@ function addSpend() {
     date
   });
 
-  spendOn.set(convertDate(date), (spendOn.get(convertDate(date)) || 0) + amount);
-
+  spendList.sort((a, b) => {
+    return a.date < b.date;
+  });
   renderSpendList();
 
   recomputePS = true;
   rebuildST = true;
-  recomputeRM = true;
+  // recomputeRM = true;
 
   nameInputElement.value = '';
   amountInputElement.value = '';
