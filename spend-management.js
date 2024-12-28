@@ -15,46 +15,57 @@ document.querySelector('.js-search-button').addEventListener('click', () => {
   search();
 });
 
-const spendList = [{
-   name: 'Tiền ăn trưa',
-   amount: 35000,
-   date: '2024-12-23'
-}, {
-  name: 'Tiền đổ xăng',
-  amount: 70000,
-  date: '2024-12-21'
-}, {
-  name: 'Tiền sửa xe',
-  amount: 1000000,
-  date: '2024-06-01'
-}, {
-  name: 'Tiền ăn sáng', 
-  amount: 20000,
-  date: '2024-08-03'
-}, {
-  name: 'Tiền mua quần áo',
-  amount: 514000,
-  date: '2024-10-12'
-}, {
-  name: 'Tiền mua sách',
-  amount: 386000,
-  date: '2024-05-17'
-}, {
-  name: 'Tiền gửi xe',
-  amount: 3000,
-  date: '2024-07-29'
-}, {
-  name: 'Tiền điện thoại',
-  amount: 99000,
-  date: '2024-09-15'
-}, {
-  name: 'Tiền mua thuốc',
-  amount: 459000,
-  date: '2024-11-02'
-}];
+document.querySelector('.js-file-input').addEventListener('change', (event) => {
+  const file = event.target.files[0];
+  
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const contents = e.target.result;
+      const lines = contents.split('\n');
+
+      lines.forEach((line, index) => {
+        const spend = line.split(', ');
+
+        if (spend.length !== 3) {
+          return;
+        }
+
+        const name = spend[0];
+        const amount = Number(spend[1]);
+        const date = spend[2];
+
+        spendList.push({
+          name,
+          amount,
+          date
+        });
+      });
+
+      renderSpendList();
+    }
+
+    reader.readAsText(file);
+  }
+});
+
+document.querySelector('.js-file-write-button').addEventListener('click', () => {
+  let data = '';
+  spendList.forEach((spendObject, index) => {
+    const { name, amount, date } = spendObject;
+    data += `${name}, ${amount}, ${date}\n`;
+  });
+
+  const blob = new Blob([data], { type: 'text/plain' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = 'spend-list.txt';
+  link.click();
+});
+
+const spendList = [];
 
 const N = 1e4;
-// const INF = 1e9;
 const PS = new Array(N).fill(0);
 const ST = new Array(N * 4);
 const RM = new Array(N).fill(null).map(() => new Array(Math.ceil(Math.log2(N))).fill(0));
@@ -63,19 +74,29 @@ let rebuildST = true;
 let recomputeRM = true;
 let resort = true;
 
-renderSpendList();
-
 function search() {
-  const resultElement = document.querySelector('.js-result-grid');
-
   const startDateInputElement = document.querySelector('.js-start-date-input');
   const startDate = startDateInputElement.value;
+  if (startDate === '') {
+    alert('Please enter start date');
+    return;
+  }
 
   const endDateInputElement = document.querySelector('.js-end-date-input');
   const endDate = endDateInputElement.value;
+  if (startDate === '') {
+    alert('Please enter start date');
+    return;
+  }
 
   const queryTypeContainer = document.querySelector('.js-query-type-container').querySelector('select');
   const queryType = queryTypeContainer.value;
+  if (queryType === '0') {
+    alert('Please select a query type');
+    return;
+  }
+
+  const resultElement = document.querySelector('.js-result-grid');
 
   if (resort) {
     spendList.sort((a, b) => {
@@ -307,12 +328,24 @@ function renderSpendList() {
 function addSpend() {
   const nameInputElement = document.querySelector('.js-name-input');
   const name = nameInputElement.value;
+  if (name === '') {
+    alert('Please enter spend name');
+    return;
+  }
 
   const amountInputElement = document.querySelector('.js-amount-input');
   const amount = Number(amountInputElement.value);
+  if (isNaN(amount) || amount <= 0) {
+    alert('Please enter a valid amount');
+    return;
+  }
 
   const dateInputElement = document.querySelector('.js-date-input');
   const date = dateInputElement.value;
+  if(date === '') {
+    alert('Please enter spend date');
+    return;
+  }
 
   spendList.push({
     name,
@@ -331,4 +364,3 @@ function addSpend() {
   amountInputElement.value = '';
   dateInputElement.value = '';
 }
-

@@ -60,7 +60,7 @@ body {
 }
 
 .search-button {
-  background-color: gray;
+  background-color: lightslategrey;
   color: white;
   border: none;
   font-size: 15px;
@@ -98,4 +98,15 @@ body {
   border: 2px solid;
   border-color: #007BFF;
   border-radius: 2px;
+}
+
+.file-input {
+  padding: 10px;
+  font-size: 15px;
+  cursor: pointer;
+  width: 75px;
+}
+
+.file-write-button {
+  font-size: 15px;
 }
