@@ -25,8 +25,11 @@
     <div class="js-result-grid result-grid"></div>
 
     <p class="spend-list-paragraph">Spend List</p>
-    <input type="file" class="js-file-input file-input">
-    <button class="js-file-write-button file-write-button">Save to file</button>
+    <div class="file-upload-grid">
+      <label class="file-input-label" for="file-input">Choose File</label>
+      <input type="file" class="js-file-input file-input" id="file-input">
+      <button class="js-file-write-button file-write-button">Save to File</button>
+    </div>
     <div class="spend-input-grid">
       <input placeholder="Spend name" class="js-name-input name-input">
       <input placeholder="Spend amount" class="js-amount-input amount-input">
