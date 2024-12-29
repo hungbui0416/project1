@@ -13,5 +13,5 @@ To use this project, you need:
    ```
 
 2. Navigate to the folder containing the downloaded files.
-3. Double-click on the HTML file (spend-management.html).
+3. Open HTML file with the browser (spend-management.html).
 4. The webpage will open in your default web browser.
