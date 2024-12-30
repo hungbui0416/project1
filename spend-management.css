@@ -2,16 +2,14 @@ body {
   font-family: Arial;
 }
 
-.spend-management-paragraph {
-  font-size: 30px;
+.spend-management-heading {
   text-align: center;
   
 }
 
-.spend-query-paragraph,
-.spend-list-paragraph {
+.spend-query-heading,
+.spend-list-heading {
   margin-top: 50px;
-  font-size: 20px;
 }
 
 .spend-query-grid {

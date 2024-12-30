@@ -320,7 +320,6 @@ function renderSpendList() {
       recomputePS = true;
       rebuildST = true;
       recomputeRM = true;
-      resort = true;
     });
   });
 }
