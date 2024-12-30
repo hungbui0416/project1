@@ -9,7 +9,7 @@ To use this project, you need:
 1. Download or clone this repository to your local machine.
 
    ```
-   git clone https://github.com/hungbui0416/project1-spend-management.git
+   git clone https://github.com/hungbui0416/spend-management.git
    ```
 
 2. Navigate to the folder containing the downloaded files.
